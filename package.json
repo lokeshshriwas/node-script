@@ -1,0 +1,19 @@
+{
+  "name": "node-script",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "express": "^4.19.2",
+    "express-fileupload": "^1.5.0",
+    "firebase": "^10.11.0",
+    "firebase-admin": "^12.0.0",
+    "json2csv": "^6.0.0-alpha.2"
+  }
+}
