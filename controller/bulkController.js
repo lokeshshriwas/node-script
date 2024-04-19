@@ -131,7 +131,6 @@ module.exports.updateBulk = asyncHandler(async (req, res) => {
   }
 });
 
-
 module.exports.getAllData = asyncHandler(async (req, res) => {
   const db = admin.firestore();
   const snapshot = await db.collection("listings").get();

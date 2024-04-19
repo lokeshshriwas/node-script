@@ -129,6 +129,70 @@ module.exports.addFields = asyncHandler(async (req, res) => {
 });
 
 // function to add data into the database using csv
+// module.exports.createBulkWithCsv = asyncHandler(async (req, res) => {
+//   const { collectionName } = req.params;
+
+//   try {
+//     // Ensure CSV file is uploaded
+//     if (!req.files || !req.files.csvFile) {
+//       return res.status(400).json({ error: "CSV file is required" });
+//     }
+
+//     // Extract CSV file from request
+//     const csvFile = req.files.csvFile;
+
+//      // Check file extension
+//     if (!csvFile.name.endsWith(".csv")) {
+//       return res
+//         .status(400)
+//         .json({ error: "Invalid file format. Please upload a CSV file" });
+//     }
+
+//     // Save the uploaded CSV file to the local machine
+//     const filePath = path.join(__dirname, "../uploads", csvFile.name);
+//     await csvFile.mv(filePath);
+
+//     // Convert CSV to JSON
+//     const jsonData = [];
+//     fs.createReadStream(filePath)
+//       .pipe(csv())
+//       .on("data", (data) => {
+//         jsonData.push(data);
+//       })
+//       .on("end", async () => {
+//         // Create documents in Firebase based on JSON data
+//         const db = admin.firestore();
+//         const batch = db.batch();
+//         const startTime = Date.now();
+//         let documentsCreated = 0;
+
+//         jsonData.forEach((data) => {
+//           const docRef = db.collection(collectionName).doc();
+//           batch.set(docRef, data);
+//           documentsCreated++;
+//         });
+
+//         await batch.commit();
+
+//         const endTime = Date.now();
+//         const elapsedTime = endTime - startTime;
+
+//         // Respond with success message and statistics
+//         res.status(200).json({
+//           message: "Documents created successfully",
+//           documentsCreated,
+//           elapsedTime: `${elapsedTime} milliseconds`,
+//         });
+//       });
+
+//   } catch (error) {
+//     console.error("Error creating documents:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// })
+
+
+// function to add data into the database using csv with new "won" logic 
 module.exports.createBulkWithCsv = asyncHandler(async (req, res) => {
   const { collectionName } = req.params;
 
@@ -157,6 +221,7 @@ module.exports.createBulkWithCsv = asyncHandler(async (req, res) => {
     fs.createReadStream(filePath)
       .pipe(csv())
       .on("data", (data) => {
+        // Add custom key field 'won' to each data object
         jsonData.push(data);
       })
       .on("end", async () => {
@@ -167,7 +232,13 @@ module.exports.createBulkWithCsv = asyncHandler(async (req, res) => {
         let documentsCreated = 0;
 
         jsonData.forEach((data) => {
-          const docRef = db.collection(collectionName).doc();
+          // Extract the 'won' field value to use as document ID
+          const documentId = data['won'];
+          if (!documentId) {
+            console.error("Document ID ('won') not found in CSV data:", data);
+            return;
+          }
+          const docRef = db.collection(collectionName).doc(documentId);
           batch.set(docRef, data);
           documentsCreated++;
         });
@@ -189,5 +260,5 @@ module.exports.createBulkWithCsv = asyncHandler(async (req, res) => {
     console.error("Error creating documents:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-})
+});
 
